@@ -17,8 +17,10 @@ function create({items}, styleContext, {createChild}){
         li.appendChild(createChild(item));
         return li;
     }).forEach(li => nodeElement.appendChild(li));
-    return ul;
+    return nodeElement;
 }
+
+//todo: handle mount/unmount procedure
 
 function updateCreator(nodeElement, initialProps, styleContext, {createChild, updateChild}){
     let lastItems = initialProps.items;

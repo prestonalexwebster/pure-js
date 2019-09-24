@@ -1,4 +1,6 @@
 
+const valueSelector = event => event.target.value;
+
 function template({value}, styleContext, options){
     return `<input type="text" class="${styleContext.input}" value="${value}">`;
 }
@@ -9,10 +11,13 @@ function create({value}, styleContext, options){
     return nodeElement;
 }
 
-function mount(nodeElement, styleContext, {onChange}){
-    nodeElement.addEventListener('change', onChange);
+function mount(nodeElement, props, styleContext, {onChange}){
+    function handleChange(event){
+        onChange(valueSelector(event));
+    }
+    nodeElement.addEventListener('change', handleChange);
     return function(){
-        nodeElement.removeEventListener(onChange);
+        nodeElement.removeEventListener(handleChange);
     }
 }
 

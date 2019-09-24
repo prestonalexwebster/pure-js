@@ -1,0 +1,14 @@
+{
+  "name": "lib",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "npm run build && serve dist",
+    "build": "node make/make.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "acorn": "^7.1.0",
+    "acorn-loose": "^7.0.0",
+    "fs-extra": "^8.1.0"
+  }
+}
