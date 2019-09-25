@@ -1,0 +1,19 @@
+
+.button{
+    margin: 5px;
+    border: 0;
+    border-radius: 4px;
+    color: #fff;
+}
+
+.primary{
+    background-color: cornflowerblue;
+}
+
+.danger{
+    background-color: tomato;
+}
+
+.accept {
+    background-color: darkgreen;
+}

@@ -37,7 +37,7 @@ ${bodyContent}
 
 function createCssTemplate(modulesCss){
     return modulesCss.map(href => {
-        return `    <link rel="stylesheet/css" href="${href}">`;
+        return `    <link rel="stylesheet" href="${href}">`;
     }).join('\n');
 }
 

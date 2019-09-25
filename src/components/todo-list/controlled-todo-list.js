@@ -8,16 +8,16 @@ function template({todoDraft, todos,  activeTodoId, activeDraft}){
     return (
 `
 ${Input.template({value: isEditMode ? activeDraft : todoDraft})}
-${Button.template({label: isEditMode ? "Apply" : "Add"})}
+${Button.template({label: isEditMode ? "Apply" : "Add", primary: isEditMode})}
 ${List.template({items: todos}, {childTemplate: Todo.template})}
 `
 );
 }
 
-function create({todoDraft, todos, activeTodoId, activeDraft}, options){
+function create({todoDraft, todos, activeTodoId, activeDraft}){
     const isEditMode = activeTodoId !== null;
-    const inputElement = Input.create({value: isEditMode ? activeDraft : todoDraft}, null);
-    const buttonElement = Button.create({label: isEditMode ? "Apply" : "Add"});
+    const inputElement = Input.create({value: isEditMode ? activeDraft : todoDraft});
+    const buttonElement = Button.create({label: isEditMode ? "Apply" : "Add", primary: isEditMode});
     const listElement = List.create({items: todos}, {createChild: Todo.create});
     return [inputElement, buttonElement, listElement];
 }
@@ -50,7 +50,7 @@ function updateCreator(nodeElements, {todos, activeTodoId, activeDraft}, {editTo
         const isEditMode = activeTodoId !== null;
         updateInput({value: isEditMode ? activeDraft : todoDraft});
         updateList({items: todos});
-        updateButton({label:  isEditMode ? "Apply" : "Add"})
+        updateButton({label:  isEditMode ? "Apply" : "Add", primary: isEditMode})
     };
 }
 

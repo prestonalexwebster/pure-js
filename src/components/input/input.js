@@ -5,11 +5,11 @@ const styleContext = {
 
 const valueSelector = event => event.target.value;
 
-function template({value}, options){
+function template({value}){
     return `<input type="text" class="${styleContext.input}" value="${value}">`;
 }
 
-function create({value}, options){
+function create({value}){
     const nodeElement = document.createElement('input');
     nodeElement.value = value;
     return nodeElement;
@@ -25,7 +25,7 @@ function mount(nodeElement, props, {onChange}){
     }
 }
 
-function updateCreator(nodeElement, initialProps, options){
+function updateCreator(nodeElement){
     return function({value}){
         nodeElement.value = value;
     }
