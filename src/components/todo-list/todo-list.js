@@ -1,61 +1,72 @@
-import {List} from '/components/list/list.js';
-import {Button} from '/components/button/button.js';
-import {Input} from '/components/input/input.js';
+import {TodoList as ControlledTodoList} from '/components/todo-list/controlled-todo-list.js';
+import {TodoStore, initialState} from '/components/todo-list/todo-store.js';
 
-function templateText(d){
-    return(`<p>${d.text}</p>`);
+function template(state=initialState){
+    return ControlledTodoList.template(state);
 }
 
-function createText(d){
-    const p = document.createElement('p');
-    p.textContent = d.text;
-    return p;
+function create(state=initialState){
+    return ControlledTodoList.create(state);
 }
 
-function updateText(parent, {text}){
-    parent.firstChild.textContent = text;
-}
+function mount(nodeElements, state=initialState){
 
-function template({todoDraft, todos}, styleContext, options){
-    return (
-`
-${Input.template({value: todoDraft}, styleContext, null)}
-${Button.template(null, styleContext, {label: "Add"})}
-${List.template({items: todos}, styleContext, {label: "", childTemplate: templateText})}
-`
-    );
-}
+    const todoStore = new TodoStore(state);
 
-function create({todoDraft, todos}, styleContext, options){
-    const inputElement = Input.create({value: todoDraft}, styleContext, null);
-    const buttonElement = Button.create(null, styleContext, {label: "Add"});
-    const listElement = List.create({items: todos}, styleContext, {createChild: createText});
-    return [inputElement, buttonElement, listElement];
-}
-
-function mount(nodeElements, props, styleContext, {addTodo, setTodoDraft}){
-    const [inputElement, buttonElement] = nodeElements;
-    const unmountInput = Input.mount(inputElement, null, styleContext, {onChange: setTodoDraft});
-    const unmountButton = Button.mount(buttonElement, null, styleContext, {onClick: addTodo});
-    return () => {
-        unmountInput();
-        unmountButton();
+    function setTodoDraft(draftText){
+        if(todoStore.state.activeTodoId !== null){
+            todoStore.setActiveToDoDraft(draftText);
+        }else{
+            todoStore.setTodoDraft(draftText);
+        }
+        updateTodos(todoStore.state);
     }
-}
 
-function updateCreator(nodeElements, {todos}, styleContext, options){
-    const [inputElement, ,listElement] = nodeElements;
-    const updateInput = Input.updateCreator(inputElement);
-    const updateList = List.updateCreator(listElement, {items: todos}, styleContext, {updateChild: updateText, createChild: createText});
-    return function ({todos, todoDraft}){
-        updateInput({value: todoDraft});
-        updateList({items: todos});
-    };
+    function applyDraft(){
+        if(todoStore.state.activeTodoId !== null){
+            todoStore.applyActiveTodo();
+        }else{
+            todoStore.addTodo();
+        }
+        updateTodos(todoStore.state);
+    }
+
+    function editTodo(id){
+        todoStore.setActiveTodo(id);
+        updateTodos(todoStore.state);
+    }
+
+    function removeTodo(id){
+        todoStore.removeTodo(id);
+        updateTodos(todoStore.state);
+    }
+
+    function emptyTodos(){
+        updateTodos({todos: [], ...todoStore.state});
+    }
+
+    const updateTodos = ControlledTodoList.updateCreator(
+        nodeElements,
+        state,
+        {editTodo, removeTodo}
+        );
+
+
+    return ControlledTodoList.mount(
+        nodeElements,
+        todoStore.state,
+        {
+            applyDraft,
+            setTodoDraft,
+            removeTodo,
+            editTodo,
+            emptyTodos
+        }
+    );
 }
 
 export const TodoList = {
     create,
     mount,
-    updateCreator,
     template
 };

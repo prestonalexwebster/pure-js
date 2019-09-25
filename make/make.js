@@ -2,14 +2,8 @@ const path = require('path');
 const fs = require('fs');
 const fse = require('fs-extra');
 
-//todo: add compile time templating
-fse.remove('./dist').then(() => {
-    fs.mkdirSync('dist');
-    fse.copySync('./src', './dist');
-
-    const modulesPaths = [];
-    const modulesCss = [];
-    const dirs = ['./dist'];
+function extractModules(pathName, modulesJs, modulesCss){
+    const dirs = [pathName];
     while(dirs.length){
         const dir = dirs.pop();
         fs.readdirSync(dir).forEach(fileName => {
@@ -17,32 +11,61 @@ fse.remove('./dist').then(() => {
             if(fs.lstatSync(fullName).isDirectory()){
                 dirs.push(fullName);
             }else if(/.+\.js$/.test(fileName)){
-                modulesPaths.push(path.relative('./dist', fullName));
+                modulesJs.push(path.relative(pathName, fullName));
             }else if(/.+\.css$/.test(fileName)){
-                modulesCss.push(path.relative('./dist', fullName));
+                modulesCss.push(path.relative(pathName, fullName));
             }
         });
     }
-    const indexHtml =
-        `
+}
+
+const createBaseHtmlTemplate = (headContent, bodyContent) => (
+`
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-    ${
-            modulesCss.map(href => {
-                return `<link rel="stylesheet/css" href="${href}">`;
-            }).join('\n    ')
-            }
+${headContent}
 </head>
 <body>
-    ${modulesPaths.map(src => {
-            return `<script type="module" src="${src}"></script>`;
-        }).join('\n    ')}
+${bodyContent}
 </body>
 </html>
-`;
-    fs.writeFileSync('./dist/index.html', indexHtml);
+`
+);
+
+function createCssTemplate(modulesCss){
+    return modulesCss.map(href => {
+        return `    <link rel="stylesheet/css" href="${href}">`;
+    }).join('\n');
+}
+
+function createJsTemplate(modulesJs){
+    return modulesJs.map(src => {
+        return `    <script type="module" src="${src}"></script>`;
+    }).join('\n');
+}
+
+function createHtmlTemplate(modulesJs, modulesCss){
+    return createBaseHtmlTemplate(createCssTemplate(modulesCss), createJsTemplate(modulesJs));
+}
+
+function buildBundle(pathName){
+    const modulesJs = [];
+    const modulesCss = [];
+
+    extractModules(pathName, modulesJs, modulesCss);
+
+    fs.writeFileSync(`${pathName}/index.html`, createHtmlTemplate(modulesJs, modulesCss));
+}
+
+
+fse.remove('./dist').then(() => {
+
+    fs.mkdirSync('dist');
+    fse.copySync('./src', './dist');
+
+    buildBundle('./dist');
 
 });
