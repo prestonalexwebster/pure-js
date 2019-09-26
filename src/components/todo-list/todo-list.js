@@ -1,72 +1,84 @@
 import {TodoList as ControlledTodoList} from '/components/todo-list/controlled-todo-list.js';
-import {TodoStore, initialState} from '/components/todo-list/todo-store.js';
+import {TodoRepository, initialState} from '/components/todo-list/todo-repository.js';
+import {PersistentStore} from '/components/todo-list/persistent-store.js';
 
-function template(state=initialState){
-    return ControlledTodoList.template(state);
+function template(){
+    return ControlledTodoList.template(initialState);
 }
 
-function create(state=initialState){
-    return ControlledTodoList.create(state);
-}
+function makeTodoListModule(){
 
-function mount(nodeElements, state=initialState){
+    const todoStore = new PersistentStore('todo-store', initialState);
 
-    const todoStore = new TodoStore(state);
+    const state = todoStore.getState();
 
-    function setTodoDraft(draftText){
-        if(todoStore.state.activeTodoId !== null){
-            todoStore.setActiveToDoDraft(draftText);
-        }else{
-            todoStore.setTodoDraft(draftText);
+    const todoRepository = new TodoRepository(todoStore);
+
+    function create(){
+        return ControlledTodoList.create(state);
+    }
+
+    function mount(nodeElements){
+
+        function setTodoDraft(draftText){
+            if(todoRepository.getState().activeTodoId !== null){
+                todoRepository.setActiveToDoDraft(draftText);
+            }else{
+                todoRepository.setTodoDraft(draftText);
+            }
         }
-        updateTodos(todoStore.state);
-    }
 
-    function applyDraft(){
-        if(todoStore.state.activeTodoId !== null){
-            todoStore.applyActiveTodo();
-        }else{
-            todoStore.addTodo();
+        function applyDraft(){
+            if(todoRepository.getState().activeTodoId !== null){
+                todoRepository.applyActiveTodo();
+            }else{
+                todoRepository.addTodo();
+            }
         }
-        updateTodos(todoStore.state);
-    }
 
-    function editTodo(id){
-        todoStore.setActiveTodo(id);
-        updateTodos(todoStore.state);
-    }
+        function editTodo(id){
+            todoRepository.setActiveTodo(id);
+        }
 
-    function removeTodo(id){
-        todoStore.removeTodo(id);
-        updateTodos(todoStore.state);
-    }
+        function removeTodo(id){
+            todoRepository.removeTodo(id);
+        }
 
-    function emptyTodos(){
-        updateTodos({todos: [], ...todoStore.state});
-    }
+        function emptyTodos(){
+            updateTodos({todos: [], ...todoRepository.getState()});
+        }
 
-    const updateTodos = ControlledTodoList.updateCreator(
-        nodeElements,
-        state,
-        {editTodo, removeTodo}
+        const updateTodos = ControlledTodoList.updateCreator(
+            nodeElements,
+            state,
+            {editTodo, removeTodo}
         );
 
+        todoStore.subscribe(updateTodos);
 
-    return ControlledTodoList.mount(
-        nodeElements,
-        todoStore.state,
-        {
-            applyDraft,
-            setTodoDraft,
-            removeTodo,
-            editTodo,
-            emptyTodos
-        }
-    );
+        return ControlledTodoList.mount(
+            nodeElements,
+            todoRepository.getState(),
+            {
+                applyDraft,
+                setTodoDraft,
+                removeTodo,
+                editTodo,
+                emptyTodos
+            }
+        );
+    }
+
+    return {
+        create,
+        mount
+    };
+
 }
 
+
+
 export const TodoList = {
-    create,
-    mount,
+    makeTodoListModule,
     template
 };

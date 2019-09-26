@@ -4,11 +4,20 @@ const styleContext = {
     item: 'item'
 };
 
+//todo: make an abstract child module with mount methods.
+/**
+   TODO:
+   Think about template + mount And template + mount in context of:
+   1) Stateful Server side rendering
+   2) Stateless Server side rendering
+   3) Client-side caching
+   4) Combinations
+ */
 function template({items}, {templateChild, childOptions}){
     return (
         `<ul class="${styleContext.container}">
     ${items.map(
-            it => `<li class="${styleContext.item}">${templateChild(it, styleContext, childOptions)}</li>`
+            it => `<li>${templateChild(it,  childOptions)}</li>`
         ).join('')}
 </ul>`
     );
@@ -28,6 +37,7 @@ function create({items},  {createChild,  childOptions}){
 
 function updateCreator(nodeElement, initialProps, {createChild, updateChild, mountChild, childOptions}){
     let lastItems = initialProps.items;
+
     const unMounts = new Map([...nodeElement.children].map((node, i) => {
         const childNode = node.firstChild;
         return [initialProps.items[i].id, mountChild(childNode, initialProps.items[i], childOptions)];

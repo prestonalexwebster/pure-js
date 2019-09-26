@@ -22,7 +22,7 @@ function create({todoDraft, todos, activeTodoId, activeDraft}){
     return [inputElement, buttonElement, listElement];
 }
 
-function mount(nodeElements, props, {applyDraft, setTodoDraft, emptyTodos}){
+function mount(nodeElements, {todos}, {applyDraft, setTodoDraft, emptyTodos}){
     const [inputElement, buttonElement] = nodeElements;
     const unmountInput = Input.mount(inputElement, null, {onChange: setTodoDraft});
     const unmountButton = Button.mount(buttonElement, null, {onClick: applyDraft});
